@@ -99,6 +99,19 @@ Include in your output the name of the court, and the name of the member
 formatted as a single column. Ensure no duplicate data, and order by
 the member name. */
 
+Code:
+
+SELECT DISTINCT CONCAT( `firstname` , ' ', `surname` ) AS Member, (
+CASE WHEN `facid` =0
+THEN 'Tennis Court 1'
+ELSE 'Tennis Court 2'
+END
+) AS Court
+FROM Members
+LEFT JOIN Bookings 
+ON Bookings.memid = Members.memid
+WHERE facidIN ( 0, 1 )
+ORDER BY Member;
 
 
 
@@ -109,8 +122,27 @@ the guest user's ID is always 0. Include in your output the name of the
 facility, the name of the member formatted as a single column, and the cost.
 Order by descending cost, and do not use any subqueries. */
 
+Code:
+
+SELECT CONCAT( `firstname` , ' ', `surname` ) AS Member, name AS Facility, (
+CASE WHEN Bookings.memid =0
+THEN guestcost * slots
+ELSE membercost * slots
+END
+) AS Cost
+FROM Members
+LEFT JOIN Bookings ON Bookings.memid = Members.memid
+LEFT JOIN Facilities ON Facilities.facid = Bookings.facid
+WHERE (
+CASE WHEN Bookings.memid =0
+THEN guestcost * slots
+ELSE membercost * slots
+END
+) >30
+ORDER BY Cost DESC;
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
+
 
 
 /* PART 2: SQLite
