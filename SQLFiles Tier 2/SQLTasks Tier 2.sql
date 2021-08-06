@@ -110,7 +110,7 @@ END
 FROM Members
 LEFT JOIN Bookings 
 ON Bookings.memid = Members.memid
-WHERE facidIN ( 0, 1 )
+WHERE facid IN ( 0, 1 )
 ORDER BY Member;
 
 
@@ -138,12 +138,30 @@ CASE WHEN Bookings.memid =0
 THEN guestcost * slots
 ELSE membercost * slots
 END
-) >30
+) >30 AND Bookings.starttime LIKE '2012-09-14%'
 ORDER BY Cost DESC;
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
 
-
+SELECT CONCAT( `firstname` , ' ', `surname` ) AS Member, name AS Facility, (
+CASE WHEN Sub.memid =0
+THEN guestcost * slots
+ELSE membercost * slots
+END
+) AS Cost
+FROM Members
+LEFT JOIN (Select memid, facid, starttime, slots 
+           FROM Bookings 
+          WHERE starttime LIKE '2012-09-14%') AS Sub 
+ON Sub.memid = Members.memid
+LEFT JOIN Facilities ON Facilities.facid = Sub.facid
+WHERE (
+CASE WHEN Sub.memid =0
+THEN guestcost * slots
+ELSE membercost * slots
+END
+) >30
+ORDER BY Cost DESC;
 
 /* PART 2: SQLite
 
