@@ -168,16 +168,37 @@ ORDER BY Cost DESC;
 Export the country club data from PHPMyAdmin, and connect to a local SQLite instance from Jupyter notebook 
 for the following questions.  
 
+***Ran codes in file SQLite Code, then transcribed code here***
+
+import sqlite3
+con = sqlite3.connect('sqlite_db_pythonsqlite.db')
+cur = con.cursor()
+
 QUESTIONS:
 /* Q10: Produce a list of facilities with a total revenue less than 1000.
 The output of facility name and total revenue, sorted by revenue. Remember
 that there's a different cost for guests and members! */
 
+query = 'SELECT name AS facility, SUM(sub.Cost) AS revenue FROM  (Select Bookings.facid, (CASE WHEN memid = 0 THEN guestcost * slots ELSE membercost * slots END) AS Cost FROM Bookings LEFT JOIN Facilities ON Facilities.facid = Bookings.facid) As sub LEFT JOIN Facilities ON Facilities.facid = sub.facid GROUP BY sub.facid HAVING SUM(sub.Cost) < 1000 ORDER BY SUM(sub.Cost)'
+for row in cur.execute(query):
+    print(row)
+
 /* Q11: Produce a report of members and who recommended them in alphabetic surname,firstname order */
 
+query = "SELECT m1.surname, m1.firstname, (CASE WHEN m1.recommendedby < 1 THEN NULL ELSE m2.surname || ' ' || m2.firstname END) AS Recommended_By FROM (SELECT surname, firstname, `recommendedby` FROM `Members`) AS m1 LEFT JOIN Members AS m2 ON m1.recommendedby = m2.memid ORDER BY m1.surname, m1.firstname"
+for row in cur.execute(query):
+    print(row)
 
 /* Q12: Find the facilities with their usage by member, but not guests */
 
+query = "SELECT name AS Facility, memid, Count(*) AS Member_Usage FROM (SELECT facid, memid FROM Bookings WHERE memid > 0) AS sub LEFT JOIN Facilities ON sub.facid = Facilities.facid GROUP BY name, memid ORDER BY name"
+for row in cur.execute(query):
+    print(row)
 
 /* Q13: Find the facilities usage by month, but not guests */
 
+# Q13: Find the facilities usage by month, but not guests 
+
+query = "SELECT name AS Facility, month, Count(*) AS Member_Usage FROM (SELECT facid, strftime('%m',starttime) as month FROM Bookings WHERE memid > 0) AS sub LEFT JOIN Facilities ON sub.facid = Facilities.facid GROUP BY name, month ORDER BY name"
+for row in cur.execute(query):
+    print(row)
